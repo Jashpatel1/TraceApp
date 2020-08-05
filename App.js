@@ -2,31 +2,40 @@ import React,{Component} from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList , StatusBar, TouchableOpacity} from 'react-native';
 
 export default class App extends Component {
-  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false};
+  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false, isLoading : false};
 
-    updateProduct = event =>{
-        this.setState({ product : event.target.value});
-    }
-
-    traceProduct = () => {
-      this.setState({ viewTrace : false });
+    traceProduct = async () => {
+      this.setState({ viewTrace : false, isLoading:true });
 
       const { product } = this.state;
 
-        fetch('https://vast-thicket-16737.herokuapp.com/api/trace', {
+      try {
+        await fetch('https://vast-thicket-16737.herokuapp.com/api/trace',{
             method: 'POST',
-            headers: { 'Content-Type' : 'application/json' },
-            body: JSON.stringify({product})
-        }).then(response => response.json())
-        .then(json => this.setState({ traceArray: json.traceArray}));
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              product : this.state.product
+            })
+        }).then((response) => response.json())
+        .then((json) => {
+          console.log(json);
+          this.setState({ traceArray: json.traceArray});
+        });
+      }catch(error){
+        console.log(error);
+      }
+        
 
-        this.setState({ viewTrace : true });
+        this.setState({ viewTrace : true, isLoading:false });
     }
 
   itemDisplay = (item , index) => {
     return (
       <View style={{justifyContent:'center',alignItems:'center'}}>
-        <Text style={{fontSize:18}}>{item}</Text>
+        <Text style={{fontSize:18, paddingHorizontal : 20}}>{item}</Text>
         {index !== this.state.traceArray.length-1 && 
         <View style={{justifyContent:'center', alignItems:'center'}}>
           <Text>|</Text>
@@ -37,6 +46,7 @@ export default class App extends Component {
   }
 
   render(){
+    console.log(this.state.product);
     console.log(this.state.traceArray);
     return (
       <View style={{ flex:1 , marginTop: StatusBar.currentHeight}}>
@@ -59,7 +69,7 @@ export default class App extends Component {
             }}
             placeholder="Product to be traced"
             value={this.state.product}
-            onChange={this.updateProduct}
+            onChangeText={(text) => this.setState({ product: text })}
           />
 
           <TouchableOpacity
@@ -85,6 +95,11 @@ export default class App extends Component {
           </TouchableOpacity>
 
           {/* <Button title="Trace" onPress={this.traceProduct}></Button> */}
+
+          {this.state.isLoading &&
+          <View style={{alignItems:'center', justifyContent : 'center', marginTop:20 }}>
+            <Text style={{fontSize:18}}>Loading ....</Text>
+          </View>}
           { this.state.viewTrace && 
           <View style={styles.container}>
             <FlatList
