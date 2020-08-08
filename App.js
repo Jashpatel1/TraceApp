@@ -1,8 +1,9 @@
 import React,{Component} from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList , StatusBar, TouchableOpacity} from 'react-native';
+import Timeline from 'react-native-timeline-flatlist'
 
 export default class App extends Component {
-  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false, isLoading : false, userArray: []};
+  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false, isLoading : false, userArray: [], data : []};
 
     traceProduct = async () => {
       this.setState({ viewTrace : false, isLoading:true });
@@ -53,7 +54,16 @@ export default class App extends Component {
     }
 
     set = (userArray) => {
-      this.setState({ userArray : userArray , viewTrace : true, isLoading:false })
+      let data = [];
+      for(let i in userArray){
+        const ele = {
+          title : userArray[i].name,
+          description : "Address - " + userArray[i].address.substring(0,15) + "....\n" +
+                        "Phone - " + userArray[i].phone + "\n"
+        }
+        data.push(ele);
+      }
+      this.setState({ userArray : userArray , viewTrace : true, isLoading:false, data : data })
     }
 
     itemDisplay = (item , index) => {
@@ -127,21 +137,13 @@ export default class App extends Component {
             <Text style={{fontSize:18}}>Loading ....</Text>
           </View>}
 
-          { this.state.viewTrace && 
-          <View style={styles.container}>
-            <FlatList
-              data = {this.state.userArray}
-              renderItem = {({item,index}) => this.itemDisplay(item, index)}
-              keyExtractor = {(item, index) => index.toString()}
-              ListEmptyComponent={
-                <View>
-                  <Text style={{fontSize:18 }}>
-                    No details for the product found.
-                  </Text>
-                </View>
-              }
-            />
-          </View> }
+          <Text>{"\n"}</Text>
+          {this.state.viewTrace && 
+          <Timeline
+            data={this.state.data}
+            circleSize={23}
+            lineColor='rgb(45,156,219)'
+          />}
         </View>
       </View>
     );
