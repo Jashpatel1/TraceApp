@@ -2,13 +2,14 @@ import React,{Component} from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList , StatusBar, TouchableOpacity} from 'react-native';
 
 export default class App extends Component {
-  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false, isLoading : false};
+  state = { product: '' , traceArray : [], isLoggedIn : true , viewTrace : false, isLoading : false, userArray: []};
 
     traceProduct = async () => {
       this.setState({ viewTrace : false, isLoading:true });
 
       const { product } = this.state;
 
+      let traceArray = [];
       try {
         await fetch('https://vast-thicket-16737.herokuapp.com/api/trace',{
             method: 'POST',
@@ -21,22 +22,47 @@ export default class App extends Component {
             })
         }).then((response) => response.json())
         .then((json) => {
-          console.log(json);
+          traceArray = json.traceArray;
+          // console.log("traceArray");
+          // console.log(json.traceArray);
           this.setState({ traceArray: json.traceArray});
         });
       }catch(error){
         console.log(error);
       }
         
+        this.getAddress(traceArray);
+        // this.setState({ viewTrace : true, isLoading:false });
+    }
+  
+  getAddress = async (traceArray) => {
+      let userArray = [];
+      for (let i in traceArray){
+        await fetch('https://vast-thicket-16737.herokuapp.com/api/user/getUser', {
+            method: 'POST',
+            headers: { 'Content-Type' : 'application/json' },
+            body: JSON.stringify({address : traceArray[i]})
+        }).then(response => response.json())
+        .then(json => {
+          console.log(json.user.name);
+          userArray.push(json.user);
+        });
+      }
 
-        this.setState({ viewTrace : true, isLoading:false });
+      this.set(userArray);
     }
 
-  itemDisplay = (item , index) => {
+    set = (userArray) => {
+      this.setState({ userArray : userArray , viewTrace : true, isLoading:false })
+    }
+
+    itemDisplay = (item , index) => {
     return (
       <View style={{justifyContent:'center',alignItems:'center'}}>
-        <Text style={{fontSize:18, paddingHorizontal : 20}}>{item}</Text>
-        {index !== this.state.traceArray.length-1 && 
+        <Text style={{fontSize:18, paddingHorizontal : 20}}>Name - {item.name}</Text>
+        <Text style={{fontSize:18, paddingHorizontal : 20}}>Phone - {item.phone}</Text>
+        <Text style={{fontSize:18, paddingHorizontal : 20}}>Address - {item.address.substring(0,15)}....</Text>
+        {index !== this.state.userArray.length-1 && 
         <View style={{justifyContent:'center', alignItems:'center'}}>
           <Text>|</Text>
           <Text>↓</Text>
@@ -46,8 +72,8 @@ export default class App extends Component {
   }
 
   render(){
-    console.log(this.state.product);
-    console.log(this.state.traceArray);
+    // console.log(this.state.product);
+    // console.log(this.state.traceArray);
     return (
       <View style={{ flex:1 , marginTop: StatusBar.currentHeight}}>
 
@@ -100,10 +126,11 @@ export default class App extends Component {
           <View style={{alignItems:'center', justifyContent : 'center', marginTop:20 }}>
             <Text style={{fontSize:18}}>Loading ....</Text>
           </View>}
+
           { this.state.viewTrace && 
           <View style={styles.container}>
             <FlatList
-              data = {this.state.traceArray}
+              data = {this.state.userArray}
               renderItem = {({item,index}) => this.itemDisplay(item, index)}
               keyExtractor = {(item, index) => index.toString()}
               ListEmptyComponent={
