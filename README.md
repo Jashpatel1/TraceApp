@@ -2,7 +2,7 @@
 
 A ReactNativeApp to support BTP work.
 
-#Steps to follow
+# Steps to follow
 
 1. Fork the repository and clone the fork on your local device.
 2. Install expo app on your mobile device.
