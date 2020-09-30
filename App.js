@@ -12,7 +12,7 @@ export default class App extends Component {
 
       let traceArray = [];
       try {
-        await fetch('https://vast-thicket-16737.herokuapp.com/api/trace',{
+        await fetch('https://cors-anywhere.herokuapp.com/vast-thicket-16737.herokuapp.com/api/trace',{
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -39,7 +39,7 @@ export default class App extends Component {
   getAddress = async (traceArray) => {
       let userArray = [];
       for (let i in traceArray){
-        await fetch('https://vast-thicket-16737.herokuapp.com/api/user/getUser', {
+        await fetch('https://cors-anywhere.herokuapp.com/vast-thicket-16737.herokuapp.com/api/user/getUser', {
             method: 'POST',
             headers: { 'Content-Type' : 'application/json' },
             body: JSON.stringify({address : traceArray[i]})
